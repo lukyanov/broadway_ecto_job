@@ -25,10 +25,12 @@ be found at [https://hexdocs.pm/broadway_ecto_job](https://hexdocs.pm/broadway_e
 Configure Broadway with one or more producers using `BroadwayEctoJob.Producer`:
 
 ```elixir
-config = EctoJob.Config.new(
-  repo: MyRepo,
-  schema: MyEctoJobQueue
-)
+config =
+  EctoJob.Config.new(
+    repo: TPBilling.Repo,
+    schema: TPBilling.Customer.JobQueue
+  )
+  |> Map.to_list()
 
 Broadway.start_link(MyBroadway,
   name: MyBroadway,

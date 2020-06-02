@@ -52,7 +52,7 @@ defmodule MyBroadway do
   def handle_message(:default, message, _context) do
     message = BroadwayEctoJob.Producer.mark_in_progress(message)
 
-    // handle the message here
+    # handle the message here
   end
 end
 ```

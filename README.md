@@ -27,8 +27,8 @@ Configure Broadway with one or more producers using `BroadwayEctoJob.Producer`:
 ```elixir
 config =
   EctoJob.Config.new(
-    repo: TPBilling.Repo,
-    schema: TPBilling.Customer.JobQueue
+    repo: MyRepo,
+    schema: MyEctoJobQueue
   )
   |> Map.to_list()
 

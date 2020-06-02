@@ -1,4 +1,7 @@
-# BroadwayEctoJob.Producer
+# BroadwayEctoJob
+
+An EctoJob connector for [Broadway](https://github.com/dashbitco/broadway).
+For more details on EctoJob see [this repo](https://github.com/mbuhot/ecto_job).
 
 **TODO: Add description**
 

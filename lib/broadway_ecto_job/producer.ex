@@ -14,7 +14,8 @@ defmodule BroadwayEctoJob.Producer do
   """
   use GenStage
   @behaviour Broadway.Producer
-  alias EctoJob.Producer
+  alias EctoJob.{Producer, JobQueue}
+  alias Broadway.Message
 
   import Supervisor.Spec, only: [worker: 2]
 
@@ -54,24 +55,46 @@ defmodule BroadwayEctoJob.Producer do
   @impl true
   def handle_demand(demand, state) do
     {:noreply, jobs, new_state} = Producer.handle_demand(demand, state)
-    {:noreply, wrap_jobs(jobs, state), new_state}
+    {:noreply, wrap_jobs(jobs), new_state}
   end
 
   @impl true
   def handle_info(term, state) do
     {:noreply, jobs, new_state} = Producer.handle_info(term, state)
-    {:noreply, wrap_jobs(jobs, state), new_state}
+    {:noreply, wrap_jobs(jobs), new_state}
   end
 
-  defp wrap_jobs(jobs, state) do
+  def mark_in_progress(message) do
+    config = Broadway.TermStorage.get!(message.metadata[:config_ref])
+
+    {:ok, updated_job} =
+      JobQueue.update_job_in_progress(
+        config[:repo],
+        message.metadata[:job],
+        DateTime.utc_now(),
+        config[:execution_timeout]
+      )
+
+    new_metadata = Keyword.put(message.metadata, :job, updated_job)
+    %Message{message | metadata: new_metadata}
+  end
+
+  defp wrap_jobs([]), do: []
+
+  defp wrap_jobs(jobs) do
     config_ref = :erlang.get(:config_ref)
 
     jobs
     |> Enum.map(fn job ->
-      %Broadway.Message{
-        data: job,
-        # metadata: Map.delete(job, :params),
-        acknowledger: {BroadwayEctoJob.Acknowledger, :ack_ref, config_ref}
+      metadata = [
+        job: Map.delete(job, :params),
+        config_ref: config_ref
+      ]
+
+      %Message{
+        data: job.params,
+        metadata: metadata,
+        acknowledger: {BroadwayEctoJob.Acknowledger, :ack_ref, :ack_data}
       }
     end)
   end

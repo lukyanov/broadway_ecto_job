@@ -3,8 +3,6 @@
 An EctoJob connector for [Broadway](https://github.com/dashbitco/broadway).
 For more details on EctoJob see [this repo](https://github.com/mbuhot/ecto_job).
 
-**TODO: Add description**
-
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
@@ -22,3 +20,21 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at [https://hexdocs.pm/broadway_ecto_job](https://hexdocs.pm/broadway_ecto_job).
 
+## Usage
+
+Configure Broadway with one or more producers using `BroadwayEctoJob.Producer`:
+
+```elixir
+config =
+  EctoJob.Config.new(
+    repo: MyRepo,
+    schema: MyEctoJobQueue
+)
+
+Broadway.start_link(MyBroadway,
+  name: MyBroadway,
+  producer: [
+    module: {BroadwayEctoJob.Producer, config}
+  ]
+)
+```

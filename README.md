@@ -25,17 +25,36 @@ be found at [https://hexdocs.pm/broadway_ecto_job](https://hexdocs.pm/broadway_e
 Configure Broadway with one or more producers using `BroadwayEctoJob.Producer`:
 
 ```elixir
-config =
-  EctoJob.Config.new(
-    repo: MyRepo,
-    schema: MyEctoJobQueue
-  )
-  |> Map.to_list()
+defmodule MyBroadway do
+  use Broadway
+  
+  def start_link(_opts) do
+    config =
+      EctoJob.Config.new(
+        repo: MyRepo,
+        schema: MyEctoJobQueue
+      )
+      |> Map.to_list()
 
-Broadway.start_link(MyBroadway,
-  name: MyBroadway,
-  producer: [
-    module: {BroadwayEctoJob.Producer, config}
-  ]
-)
+    Broadway.start_link(__MODULE__,
+      name: __MODULE__,
+      producer: [
+        module: {BroadwayEctoJob.Producer, config},
+        concurrency: 1
+      ],
+      processors: [
+        default: [concurrency: 1]
+      ]
+    )
+  end
+
+  @impl true
+  def handle_message(:default, message, _context) do
+    message = BroadwayEctoJob.Producer.mark_in_progress(message)
+
+    // handle the message here
+  end
+end
 ```
+
+

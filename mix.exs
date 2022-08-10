@@ -21,7 +21,7 @@ defmodule BroadwayEctoJob.Producer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:broadway, "~> 0.6.0"},
+      {:broadway, "~> 1.0.3"},
       {:gen_stage, "~> 1.0", override: true},
       {:ecto_job, "~> 3.0"}
     ]

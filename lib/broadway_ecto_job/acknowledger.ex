@@ -12,7 +12,7 @@ defmodule BroadwayEctoJob.Acknowledger do
   end
 
   defp mark_failed(message) do
-    config = Broadway.TermStorage.get!(message.metadata[:config_ref])
+    config = message.metadata[:config]
 
     JobQueue.job_failed(
       config[:repo],
@@ -23,7 +23,7 @@ defmodule BroadwayEctoJob.Acknowledger do
   end
 
   defp delete_successful(message) do
-    config = Broadway.TermStorage.get!(message.metadata[:config_ref])
+    config = message.metadata[:config]
 
     message.metadata[:job]
     |> JobQueue.initial_multi()

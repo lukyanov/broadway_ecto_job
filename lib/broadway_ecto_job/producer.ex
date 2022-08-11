@@ -17,13 +17,10 @@ defmodule BroadwayEctoJob.Producer do
   alias EctoJob.{Producer, JobQueue}
   alias Broadway.Message
 
-  import Supervisor.Spec, only: [worker: 2]
-
   @impl true
   def init(config) do
-    config_ref = Broadway.TermStorage.put(config)
     # TODO: come up with something better
-    :erlang.put(:config_ref, config_ref)
+    :erlang.put(:config, config)
 
     state = %Producer.State{
       repo: config[:repo],
@@ -45,10 +42,11 @@ defmodule BroadwayEctoJob.Producer do
     {_module, config} = opts[:producer][:module]
 
     {[
-       worker(Postgrex.Notifications, [
+       Postgrex.Notifications,
+       [
          config[:repo].config() ++
            [name: notifier_name(config[:schema])]
-       ])
+       ]
      ], opts}
   end
 
@@ -65,7 +63,7 @@ defmodule BroadwayEctoJob.Producer do
   end
 
   def mark_in_progress(message) do
-    config = Broadway.TermStorage.get!(message.metadata[:config_ref])
+    config = message.metadata[:config]
 
     {:ok, updated_job} =
       JobQueue.update_job_in_progress(
@@ -82,13 +80,14 @@ defmodule BroadwayEctoJob.Producer do
   defp wrap_jobs([]), do: []
 
   defp wrap_jobs(jobs) do
-    config_ref = :erlang.get(:config_ref)
+    config = :erlang.get(:config)
 
     jobs
     |> Enum.map(fn job ->
       metadata = [
+        # ?
         job: Map.delete(job, :params),
-        config_ref: config_ref
+        config: config
       ]
 
       %Message{

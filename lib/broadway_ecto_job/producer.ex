@@ -42,11 +42,11 @@ defmodule BroadwayEctoJob.Producer do
     {_module, config} = opts[:producer][:module]
 
     {[
-       Postgrex.Notifications,
-       [
-         config[:repo].config() ++
-           [name: notifier_name(config[:schema])]
-       ]
+       {Postgrex.Notifications,
+        [
+          config[:repo].config() ++
+            [name: notifier_name(config[:schema])]
+        ]}
      ], opts}
   end
 

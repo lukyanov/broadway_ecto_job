@@ -64,7 +64,7 @@ defmodule BroadwayEctoJob.Producer do
   def mark_in_progress(message) do
     config = message.metadata[:config]
 
-    {:ok, updated_job} =
+    result =
       JobQueue.update_job_in_progress(
         config[:repo],
         message.metadata[:job],
@@ -72,8 +72,15 @@ defmodule BroadwayEctoJob.Producer do
         config[:execution_timeout]
       )
 
-    new_metadata = Keyword.put(message.metadata, :job, updated_job)
-    %Message{message | metadata: new_metadata}
+    case result do
+      {:ok, updated_job} ->
+        new_metadata = Keyword.put(message.metadata, :job, updated_job)
+        message = %Message{message | metadata: new_metadata}
+        {:ok, message}
+
+      {:error, :expired} ->
+        {:error, :expired}
+    end
   end
 
   defp wrap_jobs([]), do: []
